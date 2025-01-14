@@ -2077,13 +2077,13 @@ var tempI64;
 // === Body ===
 
 var ASM_CONSTS = {
-  3294400: function() {return Module.webglContextAttributes.premultipliedAlpha;},  
- 3294461: function() {return Module.webglContextAttributes.preserveDrawingBuffer;},  
- 3294525: function() {return Module.webglContextAttributes.powerPreference;},  
- 3294583: function() {Module['emscripten_get_now_backup'] = performance.now;},  
- 3294638: function($0) {performance.now = function() { return $0; };},  
- 3294686: function($0) {performance.now = function() { return $0; };},  
- 3294734: function() {performance.now = Module['emscripten_get_now_backup'];}
+  3294928: function() {return Module.webglContextAttributes.premultipliedAlpha;},  
+ 3294989: function() {return Module.webglContextAttributes.preserveDrawingBuffer;},  
+ 3295053: function() {return Module.webglContextAttributes.powerPreference;},  
+ 3295111: function() {Module['emscripten_get_now_backup'] = performance.now;},  
+ 3295166: function($0) {performance.now = function() { return $0; };},  
+ 3295214: function($0) {performance.now = function() { return $0; };},  
+ 3295262: function() {performance.now = Module['emscripten_get_now_backup'];}
 };
 
 
@@ -2473,6 +2473,33 @@ var ASM_CONSTS = {
           }
       }
 
+  var cameraAccess = 0;
+  function _JS_AsyncWebCam_GetPermission(op, onWebcamAccessResponse) {
+  		if (!navigator.mediaDevices) {
+  			cameraAccess = 2;
+  			(function(a1) {  dynCall_vi.apply(null, [onWebcamAccessResponse, a1]); })(op);
+  			return;
+  		}
+  		navigator.mediaDevices.getUserMedia({
+  			audio: false,
+  			video: true
+  		}).then(function(stream) {
+          	//getUserMedia requests for permission (we want this) and starts the webcam (we don't want this), we're going to immediately turn it off after getting permission
+        		var tracks = stream.getVideoTracks();
+        		tracks.forEach(function(track) {
+          		track.stop();
+        		});
+  			cameraAccess = 1;
+  			navigator.mediaDevices.enumerateDevices().then(function(devices) {
+  				updateVideoInputDevices(devices);
+  				(function(a1) {  dynCall_vi.apply(null, [onWebcamAccessResponse, a1]); })(op);
+  			});
+        	}).catch(function(err) {
+  			cameraAccess = 2;
+  			(function(a1) {  dynCall_vi.apply(null, [onWebcamAccessResponse, a1]); })(op);
+        	});
+    	}
+
   var ExceptionsSeen = 0;
   function _JS_CallAsLongAsNoExceptionsSeen(cb) {
   		if (!ExceptionsSeen) {
@@ -2567,6 +2594,10 @@ var ASM_CONSTS = {
   		}
   	}
   }
+
+  function _JS_GetCurrentCameraAccessState() {
+  		return cameraAccess;
+  	}
 
   var JS_GravitySensor = null;
   function _JS_GravitySensor_IsRunning() {
@@ -15507,6 +15538,7 @@ var asmLibraryArg = {
   "JS_Accelerometer_IsRunning": _JS_Accelerometer_IsRunning,
   "JS_Accelerometer_Start": _JS_Accelerometer_Start,
   "JS_Accelerometer_Stop": _JS_Accelerometer_Stop,
+  "JS_AsyncWebCam_GetPermission": _JS_AsyncWebCam_GetPermission,
   "JS_CallAsLongAsNoExceptionsSeen": _JS_CallAsLongAsNoExceptionsSeen,
   "JS_Cursor_SetImage": _JS_Cursor_SetImage,
   "JS_Cursor_SetShow": _JS_Cursor_SetShow,
@@ -15515,6 +15547,7 @@ var asmLibraryArg = {
   "JS_Eval_OpenURL": _JS_Eval_OpenURL,
   "JS_FileSystem_Initialize": _JS_FileSystem_Initialize,
   "JS_FileSystem_Sync": _JS_FileSystem_Sync,
+  "JS_GetCurrentCameraAccessState": _JS_GetCurrentCameraAccessState,
   "JS_GravitySensor_IsRunning": _JS_GravitySensor_IsRunning,
   "JS_GravitySensor_Start": _JS_GravitySensor_Start,
   "JS_GravitySensor_Stop": _JS_GravitySensor_Stop,
